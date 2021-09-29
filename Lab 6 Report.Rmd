@@ -1,0 +1,106 @@
+---
+title: "Lab 06: Scaling Analysis"
+author: "Student's Name"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = F, message = F,options(suppressMessages=T))
+```
+
+# R packages Required
+
+```{r}
+library( geojsonio ) # read shape files 
+library( sp ) # work with shape files 
+library( sf ) # work with shape files - simple features format 
+library( tmap ) # theme maps 
+library( dplyr ) # data wrangling 
+library( pander ) # nice tables
+library( tidycensus )
+library(cartogram)
+library(tigris)
+library(mapview)
+library(purrr)
+library(stringr)
+library( maptools )   # spatial object manipulation 
+library( rgdal )
+options(tigris_class = "sf")
+options(tigris_use_cache = TRUE)
+```
+
+Instructions:
+
+1. Create an R script that will convert all US Metro Area shapefiles into Dorling cartograms, one new shapefile for each metro area.
+
+
+```{r}
+key <- "e9611cacc043440a6f7258b1635a1d4a7c05306c"
+census_api_key( key)
+
+us <- unique(fips_codes$state)[1:51]
+
+totalpop <- map_df(us, function(x) {
+ data1<-get_acs(geography = "tract", variables = "B01003_001", state = x,geometry=FALSE)%>%
+  select( GEOID, estimate ) %>%
+         rename( POP=estimate )
+data2<-get_acs(geography = "tract", variables = "B19013_001", state = x,geometry=FALSE) %>% 
+         select( GEOID, estimate ) %>%
+         rename( MHHI=estimate )
+phx <- tracts( state=x, cb=TRUE, year=2017 )
+
+phx <- merge( phx, data1, by.x="GEOID", by.y="GEOID" )
+phx <- merge( phx, data2, by.x="GEOID", by.y="GEOID" )
+
+   return( phx ) 
+
+})
+
+str(totalpop)
+
+```
+
+
+
+
+```{r}
+# project map and remove empty tracts
+phx <- st_transform( totalpop, CRS("+init=epsg:3395"))
+phx <- phx[ phx$POP != 0 & (! is.na( phx$POP )) , ]
+# convert census tract polygons to dorling cartogram
+# no idea why k=0.03 works, but it does - default is k=5
+phx$pop.w <- phx$POP / 10000   # standardizes it to max of 1.5
+```
+
+
+2. Save each Dorling cartogram as a geoJSON file. 
+
+```{r}
+id<-split(phx,phx$STATEFP)
+#ALABANA
+AL<- cartogram_dorling( x=id$`01`, weight="pop.w", k=0.03 )
+geojson_write( AL, file="AL.geojson", geometry="polygon" )
+
+#AK
+AK<- cartogram_dorling( x=id$`02`, weight="pop.w", k=0.03 )
+geojson_write( AK, file="AK.geojson", geometry="polygon" )
+
+
+#AZ
+AZ<- cartogram_dorling( x=id$`04`, weight="pop.w", k=0.03 )
+geojson_write( AZ, file="AZ.geojson", geometry="polygon" )
+
+#AR
+AR<- cartogram_dorling( x=id$`05`, weight="pop.w", k=0.03 )
+geojson_write( AR, file="AR.geojson", geometry="polygon" )
+
+```
+
+
+
+3. Create a dorling-msa-geojson GitHub repository. 
+
+
+
+
+4. Upload the files and add instructions to the README for people to use them as alternatives to regular Census tract maps to improve the visualization of demographic data in urban environments.
