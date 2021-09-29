@@ -1,32 +1,7 @@
 # barebones-jekyll
 
-A barebones website template for students to fork while learning how to build a GitHub website. 
+## Will take you through alternative methods to access and use geospatial metro statistics areas in the united states of America.
 
-
-## Will teach you how to use themes like these:
-
-* [contrast](https://github.com/niklasbuschmann/contrast)
-* [polar bear theme] (https://github.com/diezcami/polar-bear-theme)
-* [lanyon](http://lanyon.getpoole.com/)
-
-# your minimal site:
-
-```
-site  
-├── index.md   
-├── config.yml  
-├── assets folder  
-│   └── images    
-│   └── CSS files  
-├── _layouts folder  
-│   └── default.html  
-│   └── page.html   
-└── _includes folder   
-    ├── head.html  
-    ├── header.html  
-    ├── navbar.html  
-    └── footer.html  
-``` 
   
 ## index.md
 
